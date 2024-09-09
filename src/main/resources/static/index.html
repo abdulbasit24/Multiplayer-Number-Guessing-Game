@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multiplayer Number Guessing Game</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            text-align: center;
+            background-color: #1f2833;
+            color: #66fcf1;
+            margin: 0;
+            padding: 0;
+        }
+
+        .game-container {
+            margin: auto;
+            padding: 20px;
+            max-width: 400px;
+            background-color: #0b0c10;
+            border-radius: 10px;
+            box-shadow: 0px 8px 30px rgba(0, 0, 0, 0.5);
+            margin-top: 100px;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            color: #45a29e;
+        }
+
+        p {
+            font-size: 1.2em;
+            color: #c5c6c7;
+        }
+
+        input[type="number"] {
+            width: 120px;
+            padding: 10px;
+            margin: 20px 0;
+            font-size: 1.2em;
+            border: 2px solid #66fcf1;
+            border-radius: 5px;
+            background-color: #1f2833;
+            color: #c5c6c7;
+            text-align: center;
+        }
+
+        input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+        }
+
+        button {
+            padding: 12px 30px;
+            font-size: 1.2em;
+            margin: 10px 0;
+            cursor: pointer;
+            background-color: #45a29e;
+            border: none;
+            border-radius: 5px;
+            color: #0b0c10;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #66fcf1;
+        }
+
+        .feedback {
+            font-size: 1.6em;
+            margin-top: 25px;
+            color: #c5c6c7;
+            min-height: 40px;
+        }
+
+        .new-game {
+            background-color: #c5c6c7;
+            color: #0b0c10;
+        }
+
+        .new-game:hover {
+            background-color: #66fcf1;
+            color: #0b0c10;
+        }
+
+        @media (max-width: 600px) {
+            .game-container {
+                width: 90%;
+                margin-top: 50px;
+            }
+
+            input[type="number"] {
+                width: 100px;
+            }
+
+            button {
+                font-size: 1em;
+                padding: 10px 20px;
+            }
+
+            h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="game-container">
+        <h1>Guess The Number</h1>
+        <p>Enter a number between 0 and 100</p>
+        <input id="guessInput" type="number" placeholder="Your guess" min="0" max="100">
+        <br>
+        <button onclick="submitGuess()">Submit Guess</button>
+        <div id="feedback" class="feedback"></div>
+        <button class="new-game" onclick="startNewGame()">Start New Game</button>
+    </div>
+
+    <script>
+        const feedbackElement = document.getElementById('feedback');
+
+        function submitGuess() {
+            const guessInput = document.getElementById('guessInput').value;
+
+            if (guessInput === '') {
+                feedbackElement.textContent = "Please enter a number.";
+                return;
+            }
+
+            fetch('/guess/play', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ number: parseInt(guessInput) })
+            })
+            .then(response => response.text())
+            .then(result => {
+                feedbackElement.textContent = result;
+                feedbackElement.style.color = result === 'Correct! You guessed it right.' ? '#45a29e' : '#c5c6c7';
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                feedbackElement.textContent = "Error communicating with the server.";
+            });
+        }
+
+        function startNewGame() {
+            fetch('/guess/new')
+            .then(response => response.text())
+            .then(result => {
+                feedbackElement.textContent = result;
+                feedbackElement.style.color = '#66fcf1';
+                document.getElementById('guessInput').value = '';
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                feedbackElement.textContent = "Error starting a new game.";
+            });
+        }
+    </script>
+
+</body>
+</html>
